@@ -10,7 +10,7 @@
             const regexKKO = /KKO[ \/:]?((?:(?<year1>\d{4})[:\/](?<caseNo1>\d{1,3}))|(?:(?<caseNo2>\d{1,3})[:\/](?<year2>\d{4})))/i;
             const regexHE = /HE[ \/:]?((?:(?<caseNo1>\d{1,4})[:\/](?<year1>\d{4}))|(?:(?<year2>\d{4})[:\/](?<caseNo2>\d{1,4})))(?: vp)?/i;
 
-            document.addEventListener('alpine:init', () => {            
+            document.addEventListener('alpine:init', () => {                            
                 Alpine.data('jump', () => ({
                     result: emptyResult,
                     error: undefined,
@@ -86,9 +86,12 @@
     <body>
         <div 
             x-data="jump"             
+            x-init="$refs.needle.focus()"
             class="container mx-auto my-4 flex flex-col items-center gap-2">
+            
             <input 
-                type="text" 
+                type="text"
+                x-ref="needle"
                 @keyup="search"
                 @keyup.enter="go" 
                 placeholder="KKO 2022:18" 
