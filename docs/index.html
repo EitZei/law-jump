@@ -6,11 +6,12 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script>
-            const regexKKO = /KKO\s?(?<year>\d{4}):(?<caseNo>\d{1,3})/i;            
+            const emptyResult = { title: "", links: [] };
+            const regexKKO = /KKO[ \/:]?((?:(?<year1>\d{4})[:\/](?<caseNo1>\d{1,3}))|(?:(?<caseNo2>\d{1,3})[:\/](?<year2>\d{4})))/i;            
 
             document.addEventListener('alpine:init', () => {            
                 Alpine.data('jump', () => ({
-                    result: { title: "", links: [] },
+                    result: emptyResult,
                     error: undefined,
                     /*result: { title: "KKO 2018:22", links: [
                         {
@@ -30,6 +31,7 @@
                             this.result = this.getKKOResult(match.groups);
                         } else {
                             this.error = "Ei tuloksia";
+                            this.result = emptyResult;
                         }
                     },
                     go() {
@@ -37,7 +39,10 @@
                             window.location = this.result.links[0].href;
                         }
                     },
-                    getKKOResult({ year, caseNo }) {
+                    getKKOResult({ year1, caseNo1, year2, caseNo2 }) {
+                        const year = year1 || year2;
+                        const caseNo = caseNo1 || caseNo2;
+
                         return {
                             title: `KKO ${year}:${caseNo}`,
                             links: [
@@ -72,10 +77,11 @@
 
             <div class="flex flex-row">                
                 <template x-for="link in result.links">                    
-                    <a 
-                        x-text="link.title" 
+                    <a                         
                         :href="link.href"
-                        class="block border-2 p-4 rounded-lg text-center drop-shadow">
+                        class="block flex flex-col gap-2 border-2 p-4 rounded-lg text-center drop-shadow">
+                        <span x-text="link.title" class="font-bold text-lg"></span>
+                        <span x-text="result.title" class="text-sm"></span>
                     </a>                
                 </template>
             </div>
