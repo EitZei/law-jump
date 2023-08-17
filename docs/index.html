@@ -11,16 +11,30 @@
             document.addEventListener('alpine:init', () => {            
                 Alpine.data('jump', () => ({
                     result: { title: "", links: [] },
+                    error: undefined,
+                    /*result: { title: "KKO 2018:22", links: [
+                        {
+                            title: "Finlex",
+                            href: "https://finlex.fi"
+                        }
+                    ]},*/
          
                     search(e) {
                         var needle = e.target.value;
                     
                         var match = needle.match(regexKKO);                
 
+                        this.error = undefined;
+
                         if (match !== null) {
                             this.result = this.getKKOResult(match.groups);
                         } else {
-                            this.result = { title: "Not found", links: [] };
+                            this.error = "Ei tuloksia";
+                        }
+                    },
+                    go() {
+                        if (this.result.links.length > 0) {
+                            window.location = this.result.links[0].href;
                         }
                     },
                     getKKOResult({ year, caseNo }) {
@@ -44,16 +58,25 @@
         </script>
     </head>
     <body>
-        <div x-data="jump">
-            <input type="text" @keyup="search" placeholder="KKO 2022:18" />
+        <div 
+            x-data="jump"             
+            class="container mx-auto my-4 flex flex-col items-center gap-2">
+            <input 
+                type="text" 
+                @keyup="search"
+                @keyup.enter="go" 
+                placeholder="KKO 2022:18" 
+                class="block border-4 rounded-lg text-center text-xl"/>
 
-            <div>
-                <h1 x-text="result.title"></h2>
-                <template x-for="link in result.links">
-                    <div>
-                        <a x-text="link.title" :href="link.href"></a>
-                        <span x-text="link.href"></span>
-                    </div>
+            <span x-text="error"></span>
+
+            <div class="flex flex-row">                
+                <template x-for="link in result.links">                    
+                    <a 
+                        x-text="link.title" 
+                        :href="link.href"
+                        class="block border-2 p-4 rounded-lg text-center drop-shadow">
+                    </a>                
                 </template>
             </div>
         </div>
