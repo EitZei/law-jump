@@ -7,13 +7,14 @@
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script>
             const emptyResult = { title: "", links: [] };
-            const regexKKO = /KKO[ \/:]?((?:(?<year1>\d{4})[:\/](?<caseNo1>\d{1,3}))|(?:(?<caseNo2>\d{1,3})[:\/](?<year2>\d{4})))/i;            
+            const regexKKO = /KKO[ \/:]?((?:(?<year1>\d{4})[:\/](?<caseNo1>\d{1,3}))|(?:(?<caseNo2>\d{1,3})[:\/](?<year2>\d{4})))/i;
+            const regexHE = /HE[ \/:]?((?:(?<caseNo1>\d{1,4})[:\/](?<year1>\d{4}))|(?:(?<year2>\d{4})[:\/](?<caseNo2>\d{1,4})))(?: vp)?/i;
 
             document.addEventListener('alpine:init', () => {            
                 Alpine.data('jump', () => ({
                     result: emptyResult,
                     error: undefined,
-                    /*result: { title: "KKO 2018:22", links: [
+                    /*result: { title: "KKO 201E8:22", links: [
                         {
                             title: "Finlex",
                             href: "https://finlex.fi"
@@ -21,14 +22,16 @@
                     ]},*/
          
                     search(e) {
-                        var needle = e.target.value;
-                    
-                        var match = needle.match(regexKKO);                
+                        const needle = e.target.value;
+                        
+                        let match = undefined
 
                         this.error = undefined;
 
-                        if (match !== null) {
+                        if ((match = needle.match(regexKKO)) !== null) {
                             this.result = this.getKKOResult(match.groups);
+                        } else if ((match = needle.match(regexHE)) !== null) {
+                            this.result = this.getHEResult(match.groups);
                         } else {
                             this.error = "Ei tuloksia";
                             this.result = emptyResult;
@@ -44,7 +47,7 @@
                         const caseNo = caseNo1 || caseNo2;
 
                         return {
-                            title: `KKO ${year}:${caseNo}`,
+                            title: `KKO:${year}:${caseNo}`,
                             links: [
                                 {
                                     title: "Finlex",
@@ -53,6 +56,24 @@
                             ]
                         }
                     },
+                    getHEResult({ year1, caseNo1, year2, caseNo2 }) {
+                        const year = year1 || year2;
+                        const caseNo = caseNo1 || caseNo2;
+                    
+                        return {
+                            title: `HE ${caseNo}/${year}`,
+                            links: [
+                                {
+                                    title: "Finlex",
+                                    href: `https://www.finlex.fi/fi/esitykset/he/${year}/${year}${this.leftpad(caseNo, 4, '0')}`
+                                },
+                                {
+                                    title: "Eduskunta",
+                                    href: `https://www.eduskunta.fi/FI/vaski/HallituksenEsitys/Sivut/HE_${caseNo}+${year}.aspx`
+                                }
+                            ]
+                        }
+                    },                    
                     leftpad(input, length, pad) {
                         const padLength = Math.max(0, length - input.length);
 
@@ -75,7 +96,7 @@
 
             <span x-text="error"></span>
 
-            <div class="flex flex-row">                
+            <div class="flex flex-row gap-2">                
                 <template x-for="link in result.links">                    
                     <a                         
                         :href="link.href"
