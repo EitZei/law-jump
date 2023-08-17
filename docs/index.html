@@ -5,10 +5,57 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdn.tailwindcss.com"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script>
+            const regexKKO = /KKO\s?(?<year>\d{4}):(?<caseNo>\d{1,3})/i;            
+
+            document.addEventListener('alpine:init', () => {            
+                Alpine.data('jump', () => ({
+                    result: { title: "", links: [] },
+         
+                    search(e) {
+                        var needle = e.target.value;
+                    
+                        var match = needle.match(regexKKO);                
+
+                        if (match !== null) {
+                            this.result = this.getKKOResult(match.groups);
+                        } else {
+                            this.result = { title: "Not found", links: [] };
+                        }
+                    },
+                    getKKOResult({ year, caseNo }) {
+                        return {
+                            title: `KKO ${year}:${caseNo}`,
+                            links: [
+                                {
+                                    title: "Finlex",
+                                    href: `https://www.finlex.fi/fi/oikeus/kko/kko/${year}/${year}${this.leftpad(caseNo, 4, '0')}`
+                                }
+                            ]
+                        }
+                    },
+                    leftpad(input, length, pad) {
+                        const padLength = Math.max(0, length - input.length);
+
+                        return `${[...Array(padLength).keys()].map(_ => pad).join("")}${input}`;
+                    }
+                }))
+            })
+        </script>
     </head>
     <body>
-        <h1 class="text-3xl font-bold underline">
-            Hello world!
-        </h1>
+        <div x-data="jump">
+            <input type="text" @keyup="search" placeholder="KKO 2022:18" />
+
+            <div>
+                <h1 x-text="result.title"></h2>
+                <template x-for="link in result.links">
+                    <div>
+                        <a x-text="link.title" :href="link.href"></a>
+                        <span x-text="link.href"></span>
+                    </div>
+                </template>
+            </div>
+        </div>
     </body>
 </html>
