@@ -12,17 +12,11 @@
             const regexHE = /HE[ \/:]?((?:(?<caseNo1>\d{1,4})[:\/](?<year1>\d{4}))|(?:(?<year2>\d{4})[:\/](?<caseNo2>\d{1,4})))(?: vp)?/i;
             const regexLaw = /(?<caseNo>\d{1,4})\/(?<year>\d{4})/i;
 
-            document.addEventListener('alpine:init', () => {                            
+            document.addEventListener('alpine:init', () => {
                 Alpine.data('jump', () => ({
                     result: emptyResult,
                     error: undefined,
-                    /*result: { title: "KKO 201E8:22", links: [
-                        {
-                            title: "Finlex",
-                            href: "https://finlex.fi"
-                        }
-                    ]},*/
-         
+
                     search(e) {
                         const needle = e.target.value;
                         
@@ -30,7 +24,10 @@
 
                         this.error = undefined;
 
-                        if ((match = needle.match(regexKKO)) !== null) {
+                        if (needle === '') {
+                            this.error = undefined;
+                            this.result = emptyResult;
+                        } else if ((match = needle.match(regexKKO)) !== null) {
                             this.result = this.getKKOResult(match.groups);
                         } else if ((match = needle.match(regexKHO)) !== null) {
                             this.error = "Pahoittelut! KHO tapauksia ei pysty hakemaan.";
