@@ -133,8 +133,8 @@
                 x-ref="needle"
                 @keyup.debounce="search"
                 @keyup.enter="go" 
-                placeholder="KKO 2013:82" 
-                class="block border-4 rounded-lg text-center text-xl"/>
+                placeholder="esim. KKO 2013:82" 
+                class="block w-full border-4 p-4 rounded-lg text-center text-xl"/>
 
             <span x-text="error" class="italic"></span>
 
@@ -147,6 +147,21 @@
                         <span x-text="result.title" class="text-sm"></span>
                     </a>                
                 </template>
+            </div>
+
+            <div class="mt-32">
+                <h2 class="my-2 text-lg font-bold">Käyttöohje</h2>
+                <p class="my-2">Kirjoita hakulaatikkoon esim. oikeustapaukseen tunniste (esim. KKO 2013:82), säädösnumero (esim. 180/1958) tai hallituksen esityksen numero (esim. HE 65/2015), niin saat vastaavat linkit. Klikkaa linkkiä siirtyäksesi hakutulokseen. Painamalla Enter siirryt suoraan ensimmäiseen tulokseen.</p>
+                <h2 class="my-2 text-lg font-bold">Mikä tämä on?</h2>                
+                <p class="my-2">Palvelu on tehty omaksi, ja toivottavasti myös vähän muiden, iloksi. Oikeustapauksiin ja lakeihin viitataan eri lähteissä eri tavoilla ja tunnisteiden kopionti esim. Finlexiin oikealle sivulle on usein vaivalloista. Palvelun tarkoituksen on tehdä tästä nopeampaa.</p>
+                <h2 class="my-2 text-lg font-bold">En löydä mitään hakusanalla "ylinopeus"</h2>
+                <p class="my-2">Tämä ei ole hakukone vaan yksinkertainen linkkigeneraattori. Kokeile <a href="https://www.google.com">Googlea.</a></p>
+                <h2 class="my-2 text-lg font-bold">Linkki vie "Sivua ei löydy sivulle"</h2>
+                <p class="my-2">Palvelu ei tiedä mitään sisällöstä. Se vain pyrkii muodostamaan antamastasi syötteestä linkin oikeaan paikkaan. Jos olet esimerkiksi antanut oikeustapauksen numeron, jota ei ole olemassa, niin linkki syntyy silti, mutta ei johda mihinkään.</p>
+                <h2 class="my-2 text-lg font-bold">Kuka tämän on tehnyt?</h2>
+                <p class="my-2">Antti Järvinen, ON (Turun Yliopisto) ja ohjelmistoarkkitehti (<a href="https://61n.fi">61N</a>).</p>
+                <h2 class="my-2 text-lg font-bold">Palvelu ei toimi halumallani tavalla!</h2>
+                <p class="my-2">Laita postia <a href="mailto:antti@vaan.fi">antti@vaan.fi</a> tai tee issue <a href="https://github.com/EitZei/law-jump">GitHubissa</a>.</p>
             </div>
         </div>
     </body>
