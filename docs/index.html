@@ -1,165 +1,236 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <script>
-            const emptyResult = { title: "", links: [] };
-            const regexKKO = /KKO[ \/:]?((?:(?<year1>\d{4})[:\/](?<caseNo1>\d{1,3}))|(?:(?<caseNo2>\d{1,3})[:\/](?<year2>\d{4})))/i;
-            const regexKHO = /KHO[ \/:]?((?:(?<year1>\d{4})[:\/](?<caseNo1>\d{1,3}))|(?:(?<caseNo2>\d{1,3})[:\/](?<year2>\d{4})))/i;
-            const regexHE = /HE[ \/:]?((?:(?<caseNo1>\d{1,4})[:\/](?<year1>\d{4}))|(?:(?<year2>\d{4})[:\/](?<caseNo2>\d{1,4})))(?: vp)?/i;
-            const regexLaw = /(?<caseNo>\d{1,4})\/(?<year>\d{4})/i;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script>
+      const emptyResult = { title: "", links: [] };
+      const regexKKO =
+        /KKO[ \/:]?((?:(?<year1>\d{4})[:\/](?<caseNo1>\d{1,3}))|(?:(?<caseNo2>\d{1,3})[:\/](?<year2>\d{4})))/i;
+      const regexKHO =
+        /KHO[ \/:]?((?:(?<year1>\d{4})[:\/](?<caseNo1>\d{1,3}))|(?:(?<caseNo2>\d{1,3})[:\/](?<year2>\d{4})))/i;
+      const regexHE =
+        /HE[ \/:]?((?:(?<caseNo1>\d{1,4})[:\/](?<year1>\d{4}))|(?:(?<year2>\d{4})[:\/](?<caseNo2>\d{1,4})))(?: vp)?/i;
+      const regexLaw = /(?<caseNo>\d{1,4})\/(?<year>\d{4})/i;
 
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('jump', () => ({
-                    result: emptyResult,
-                    error: undefined,
+      document.addEventListener("alpine:init", () => {
+        Alpine.data("jump", () => ({
+          result: emptyResult,
+          error: undefined,
 
-                    search(e) {
-                        const needle = e.target.value;
-                        
-                        let match = undefined
+          search(e) {
+            const needle = e.target.value;
 
-                        this.error = undefined;
+            let match = undefined;
 
-                        if (needle === '') {
-                            this.error = undefined;
-                            this.result = emptyResult;
-                        } else if ((match = needle.match(regexKKO)) !== null) {
-                            this.result = this.getKKOResult(match.groups);
-                        } else if ((match = needle.match(regexKHO)) !== null) {
-                            this.error = "Pahoittelut! KHO tapauksia ei pysty hakemaan.";
-                            this.result = emptyResult;
-                        } else if ((match = needle.match(regexHE)) !== null) {
-                            this.result = this.getHEResult(match.groups);
-                        } else if ((match = needle.match(regexLaw)) !== null) {
-                            this.result = this.getLawResult(match.groups);
-                        }
-                        else {
-                            this.error = "En valitettavasti ymmärrä. Kokeile esim. KKO 2013:82 tai HE 65/2015";
-                            this.result = emptyResult;
-                        }
-                    },
-                    go() {
-                        if (this.result.links.length > 0) {
-                            window.location = this.result.links[0].href;
-                        }
-                    },
-                    getKKOResult({ year1, caseNo1, year2, caseNo2 }) {
-                        const year = year1 || year2;
-                        const caseNo = caseNo1 || caseNo2;
+            this.error = undefined;
 
-                        return {
-                            title: `KKO:${year}:${caseNo}`,
-                            links: [
-                                {
-                                    title: "Finlex",
-                                    href: `https://www.finlex.fi/fi/oikeus/kko/kko/${year}/${year}${this.leftpad(caseNo, 4, '0')}`
-                                },
-                                {
-                                    title: "Edilex",
-                                    href: `https://www.edilex.fi/kko/ennakkopaatokset/${year}${this.leftpad(caseNo, 4, '0')}`
-                                },
-                                {
-                                    title: "Korkein oikeus",
-                                    href: `https://www.korkeinoikeus.fi/fi/index/ennakkopaatokset/kko${year}${caseNo}.html`
-                                }
-                            ]
-                        }
-                    },
-                    getHEResult({ year1, caseNo1, year2, caseNo2 }) {
-                        const year = year1 || year2;
-                        const caseNo = caseNo1 || caseNo2;
-                    
-                        return {
-                            title: `HE ${caseNo}/${year}`,
-                            links: [
-                                {
-                                    title: "Finlex",
-                                    href: `https://www.finlex.fi/fi/esitykset/he/${year}/${year}${this.leftpad(caseNo, 4, '0')}`
-                                },
-                                {
-                                    title: "Eduskunta",
-                                    href: `https://www.eduskunta.fi/FI/vaski/HallituksenEsitys/Sivut/HE_${caseNo}+${year}.aspx`
-                                },
-                                {
-                                    title: "Edilex",
-                                    href: `https://www.edilex.fi/he/${year}${this.leftpad(caseNo, 4, '0')}`
-                                }
-                            ]
-                        }
-                    },
-                    getLawResult({ year, caseNo }) {                
-                        return {
-                            title: `${caseNo}/${year}`,
-                            links: [
-                                {
-                                    title: "Finlex ajantasainen",
-                                    href: `https://www.finlex.fi/fi/laki/ajantasa/${year}/${year}${this.leftpad(caseNo, 4, '0')}`
-                                },
-                                {
-                                    title: "Finlex alkuperäinen",
-                                    href: `https://www.finlex.fi/fi/laki/alkup/${year}/${year}${this.leftpad(caseNo, 4, '0')}`
-                                },
-                                {
-                                    title: "Edilex",
-                                    href: `https://www.edilex.fi/lainsaadanto/${year}${this.leftpad(caseNo, 4, '0')}`
-                                }
-                            ]
-                        }
-                    },
-                    leftpad(input, length, pad) {
-                        const padLength = Math.max(0, length - input.length);
+            if (needle === "") {
+              this.error = undefined;
+              this.result = emptyResult;
+            } else if ((match = needle.match(regexKKO)) !== null) {
+              this.result = this.getKKOResult(match.groups);
+            } else if ((match = needle.match(regexKHO)) !== null) {
+              this.error = "Pahoittelut! KHO tapauksia ei pysty hakemaan.";
+              this.result = emptyResult;
+            } else if ((match = needle.match(regexHE)) !== null) {
+              this.result = this.getHEResult(match.groups);
+            } else if ((match = needle.match(regexLaw)) !== null) {
+              this.result = this.getLawResult(match.groups);
+            } else {
+              this.error =
+                "En valitettavasti ymmärrä. Kokeile esim. KKO 2013:82 tai HE 65/2015";
+              this.result = emptyResult;
+            }
+          },
+          go() {
+            if (this.result.links.length > 0) {
+              window.location = this.result.links[0].href;
+            }
+          },
+          getKKOResult({ year1, caseNo1, year2, caseNo2 }) {
+            const year = year1 || year2;
+            const caseNo = caseNo1 || caseNo2;
 
-                        return `${[...Array(padLength).keys()].map(_ => pad).join("")}${input}`;
-                    }
-                }))
-            })
-        </script>
-    </head>
-    <body>
-        <div 
-            x-data="jump"             
-            x-init="$refs.needle.focus()"
-            class="container mx-auto p-4 flex flex-col items-center gap-2">
-            
-            <input 
-                type="text"
-                x-ref="needle"
-                @keyup.debounce="search"
-                @keyup.enter="go" 
-                placeholder="esim. KKO 2013:82" 
-                class="block w-full border-4 p-4 rounded-lg text-center text-xl"/>
+            return {
+              title: `KKO:${year}:${caseNo}`,
+              links: [
+                {
+                  title: "Finlex",
+                  href: `https://www.finlex.fi/fi/oikeus/kko/kko/${year}/${year}${this.leftpad(
+                    caseNo,
+                    4,
+                    "0"
+                  )}`,
+                },
+                {
+                  title: "Edilex",
+                  href: `https://www.edilex.fi/kko/ennakkopaatokset/${year}${this.leftpad(
+                    caseNo,
+                    4,
+                    "0"
+                  )}`,
+                },
+                {
+                  title: "Korkein oikeus",
+                  href: `https://www.korkeinoikeus.fi/fi/index/ennakkopaatokset/kko${year}${caseNo}.html`,
+                },
+              ],
+            };
+          },
+          getHEResult({ year1, caseNo1, year2, caseNo2 }) {
+            const year = year1 || year2;
+            const caseNo = caseNo1 || caseNo2;
 
-            <span x-text="error" class="italic"></span>
+            return {
+              title: `HE ${caseNo}/${year}`,
+              links: [
+                {
+                  title: "Finlex",
+                  href: `https://www.finlex.fi/fi/esitykset/he/${year}/${year}${this.leftpad(
+                    caseNo,
+                    4,
+                    "0"
+                  )}`,
+                },
+                {
+                  title: "Eduskunta",
+                  href: `https://www.eduskunta.fi/FI/vaski/HallituksenEsitys/Sivut/HE_${caseNo}+${year}.aspx`,
+                },
+                {
+                  title: "Edilex",
+                  href: `https://www.edilex.fi/he/${year}${this.leftpad(
+                    caseNo,
+                    4,
+                    "0"
+                  )}`,
+                },
+              ],
+            };
+          },
+          getLawResult({ year, caseNo }) {
+            return {
+              title: `${caseNo}/${year}`,
+              links: [
+                {
+                  title: "Finlex ajantasainen",
+                  href: `https://www.finlex.fi/fi/laki/ajantasa/${year}/${year}${this.leftpad(
+                    caseNo,
+                    4,
+                    "0"
+                  )}`,
+                },
+                {
+                  title: "Finlex alkuperäinen",
+                  href: `https://www.finlex.fi/fi/laki/alkup/${year}/${year}${this.leftpad(
+                    caseNo,
+                    4,
+                    "0"
+                  )}`,
+                },
+                {
+                  title: "Edilex",
+                  href: `https://www.edilex.fi/lainsaadanto/${year}${this.leftpad(
+                    caseNo,
+                    4,
+                    "0"
+                  )}`,
+                },
+              ],
+            };
+          },
+          leftpad(input, length, pad) {
+            const padLength = Math.max(0, length - input.length);
 
-            <div class="flex flex-row gap-2">                
-                <template x-for="link in result.links">                    
-                    <a                         
-                        :href="link.href"
-                        class="block flex flex-col gap-2 border-2 p-4 rounded-lg text-center drop-shadow">
-                        <span x-text="link.title" class="font-bold text-lg"></span>
-                        <span x-text="result.title" class="text-sm"></span>
-                    </a>                
-                </template>
-            </div>
+            return `${[...Array(padLength).keys()]
+              .map((_) => pad)
+              .join("")}${input}`;
+          },
+        }));
+      });
+    </script>
+  </head>
+  <body>
+    <div
+      x-data="jump"
+      x-init="$refs.needle.focus()"
+      class="container mx-auto p-4 flex flex-col items-center gap-2"
+    >
+      <input
+        type="text"
+        x-ref="needle"
+        @keyup.debounce="search"
+        @keyup.enter="go"
+        placeholder="esim. KKO 2013:82"
+        class="block w-full border-4 p-4 rounded-lg text-center text-xl"
+      />
 
-            <div class="mt-32">
-                <h2 class="my-2 text-lg font-bold">Käyttöohje</h2>
-                <p class="my-2">Kirjoita hakulaatikkoon esim. oikeustapaukseen tunniste (esim. KKO 2013:82), säädösnumero (esim. 180/1958) tai hallituksen esityksen numero (esim. HE 65/2015), niin saat vastaavat linkit. Klikkaa linkkiä siirtyäksesi hakutulokseen. Painamalla Enter siirryt suoraan ensimmäiseen tulokseen.</p>
-                <h2 class="my-2 text-lg font-bold">Mikä tämä on?</h2>                
-                <p class="my-2">Palvelu on tehty omaksi, ja toivottavasti myös vähän muiden, iloksi. Oikeustapauksiin ja lakeihin viitataan eri lähteissä eri tavoilla ja tunnisteiden kopionti esim. Finlexiin oikealle sivulle on usein vaivalloista. Palvelun tarkoituksen on tehdä tästä nopeampaa.</p>
-                <h2 class="my-2 text-lg font-bold">En löydä mitään hakusanalla "ylinopeus"</h2>
-                <p class="my-2">Tämä ei ole hakukone vaan yksinkertainen linkkigeneraattori. Kokeile <a href="https://www.google.com">Googlea.</a></p>
-                <h2 class="my-2 text-lg font-bold">Linkki vie "Sivua ei löydy sivulle"</h2>
-                <p class="my-2">Palvelu ei tiedä mitään sisällöstä. Se vain pyrkii muodostamaan antamastasi syötteestä linkin oikeaan paikkaan. Jos olet esimerkiksi antanut oikeustapauksen numeron, jota ei ole olemassa, niin linkki syntyy silti, mutta ei johda mihinkään.</p>
-                <h2 class="my-2 text-lg font-bold">Kuka tämän on tehnyt?</h2>
-                <p class="my-2">Antti Järvinen, ON (Turun Yliopisto) ja ohjelmistoarkkitehti (<a href="https://61n.fi">61N</a>).</p>
-                <h2 class="my-2 text-lg font-bold">Palvelu ei toimi halumallani tavalla!</h2>
-                <p class="my-2">Laita postia <a href="mailto:antti@vaan.fi">antti@vaan.fi</a> tai tee issue <a href="https://github.com/EitZei/law-jump">GitHubissa</a>.</p>
-            </div>
-        </div>
-    </body>
+      <span x-text="error" class="italic"></span>
+
+      <div class="flex flex-row gap-2">
+        <template x-for="link in result.links">
+          <a
+            :href="link.href"
+            class="block flex flex-col gap-2 border-2 p-4 rounded-lg text-center drop-shadow"
+          >
+            <span x-text="link.title" class="font-bold text-lg"></span>
+            <span x-text="result.title" class="text-sm"></span>
+          </a>
+        </template>
+      </div>
+
+      <div class="mt-32">
+        <h2 class="my-2 text-lg font-bold">Käyttöohje</h2>
+        <p class="my-2">
+          Kirjoita hakulaatikkoon esim. oikeustapaukseen tunniste (esim. KKO
+          2013:82), säädösnumero (esim. 180/1958) tai hallituksen esityksen
+          numero (esim. HE 65/2015), niin saat vastaavat linkit. Klikkaa linkkiä
+          siirtyäksesi hakutulokseen. Painamalla Enter siirryt suoraan
+          ensimmäiseen tulokseen.
+        </p>
+        <h2 class="my-2 text-lg font-bold">Mikä tämä on?</h2>
+        <p class="my-2">
+          Palvelu on tehty omaksi, ja toivottavasti myös vähän muiden, iloksi.
+          Oikeustapauksiin ja lakeihin viitataan eri lähteissä eri tavoilla ja
+          tunnisteiden kopionti esim. Finlexiin oikealle sivulle on usein
+          vaivalloista. Palvelun tarkoituksen on tehdä tästä nopeampaa.
+        </p>
+        <h2 class="my-2 text-lg font-bold">
+          En löydä mitään hakusanalla "ylinopeus"
+        </h2>
+        <p class="my-2">
+          Tämä ei ole hakukone vaan yksinkertainen linkkigeneraattori. Kokeile
+          <a href="https://www.google.com">Googlea.</a>
+        </p>
+        <h2 class="my-2 text-lg font-bold">
+          Linkki vie "Sivua ei löydy sivulle"
+        </h2>
+        <p class="my-2">
+          Palvelu ei tiedä mitään sisällöstä. Se vain pyrkii muodostamaan
+          antamastasi syötteestä linkin oikeaan paikkaan. Jos olet esimerkiksi
+          antanut oikeustapauksen numeron, jota ei ole olemassa, niin linkki
+          syntyy silti, mutta ei johda mihinkään.
+        </p>
+        <h2 class="my-2 text-lg font-bold">Kuka tämän on tehnyt?</h2>
+        <p class="my-2">
+          Antti Järvinen, OTM (Turun Yliopisto) ja juristi (<a
+            href="https://61n.fi"
+            >61N</a
+          >).
+        </p>
+        <h2 class="my-2 text-lg font-bold">
+          Palvelu ei toimi halumallani tavalla!
+        </h2>
+        <p class="my-2">
+          Laita postia <a href="mailto:antti@vaan.fi">antti@vaan.fi</a> tai tee
+          issue <a href="https://github.com/EitZei/law-jump">GitHubissa</a>.
+        </p>
+      </div>
+    </div>
+  </body>
 </html>
